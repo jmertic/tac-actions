@@ -1,0 +1,53 @@
+name: TAC Actions
+description: Action that syncs data from various sources into the TAC website
+inputs:
+  domain:
+    description: Domain name for the project
+    required: true
+  gh_org:
+    description: GitHub organization name for the project
+    required: true
+  tac_agenda_project_id:
+    description: GitHub project ID for the TAC Agenda
+    required: true
+  project_id_lfx:
+    description: ID for the project in LFX PCC
+    required: true  
+  tac_committee_id_lfx:
+    description: ID for the committee in LFX PCC
+    required: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Harden Runner
+      uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
+      with:
+        egress-policy: audit
+
+    - name: Check out repo
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+    - name: Set up Python 3.x
+      uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+      with:
+        python-version: '3.x'
+    - name: Run build
+      run: |
+        python .github/workflows/updateprojects.py
+        python .github/workflows/updatetacmembers.py
+        python .github/workflows/updatetacagendaitems.py
+      env:
+        GH_TOKEN: ${{ env.PAT }}
+        GITHUB_TOKEN: ${{ env.PAT }}
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
+      with:
+         token: ${{ secrets.PAT }}
+         branch-suffix: timestamp
+         path: .
+         title: Update Data Sources
+         labels: automerge
+         commit-message: Update Data Sources
+         signoff: true
+
+
