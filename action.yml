@@ -1,21 +1,18 @@
 name: TAC Actions
 description: Action that syncs data from various sources into the TAC website
 inputs:
-  domain:
-    description: Domain name for the project
-    required: true
-  gh_org:
-    description: GitHub organization name for the project
-    required: true
-  tac_agenda_project_id:
-    description: GitHub project ID for the TAC Agenda
-    required: true
-  project_id_lfx:
-    description: ID for the project in LFX PCC
-    required: true  
-  tac_committee_id_lfx:
-    description: ID for the committee in LFX PCC
-    required: true
+  landscape_url:
+    description: "URL for the project's landscape"
+    default: ""
+  artwork_url:
+    description: "URL for the project's artwork repo"
+    default: ""
+  lfx_tac_commmittee_url:
+    description: "URL to the committee in LFX"
+    default: ""
+tac_agenda_gh_project_url:
+    description: "URL for the GitHub Project in the TAC repo for managing TAC meeting agendas"
+    default: ""
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,30 +21,50 @@ jobs:
       uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
       with:
         egress-policy: audit
-
     - name: Check out repo
       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      with:
+        token: ${{ env.token }}
+        repository: ${{ env.repository }}
+        ref: ${{ env.ref }}
+        path: tac-repo
+    - name: Checkout lfx-tac-actions
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7@v4
+      with:
+        token: ${{ env.token }}
+        repository: jmertic/lfx-landscape-tools
+        path: lfx-tac-actions
     - name: Set up Python 3.x
-      uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+      uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
       with:
         python-version: '3.x'
     - name: Run build
-      run: |
-        python .github/workflows/updateprojects.py
-        python .github/workflows/updatetacmembers.py
-        python .github/workflows/updatetacagendaitems.py
+      working-directory: ./tac-repo
       env:
+        LANDSCAPE_URL: ${{ inputs.landscape_url }}
+        ARTWORK_URL: ${{ inputs.artwork_url }}
+        LFX_TAC_COMMITTEE_URL: ${{ inputs.lfx_tac_committee_url }}
+        TAC_AGENDA_GH_PROJECT_URL: ${{ inputs.tac_agenda_gh_project_url }}
         GH_TOKEN: ${{ env.PAT }}
         GITHUB_TOKEN: ${{ env.PAT }}
+      run: |
+        python ../lfx-tac-actions/updateprojects.py
+        python ../lfx-tac-actions/updatetacmembers.py
+        python ../lfx-tac-actions/updatetacagendaitems.py
+    - name: Get current date
+      id: date
+      uses: Kaven-Universe/github-action-current-date-time@f2c12d90cff9c3e7b1f50430886e632fe31fcee1 # v1.4.0
+      with:
+        format: "YYYY-MM-DD"
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
       with:
-         token: ${{ secrets.PAT }}
-         branch-suffix: timestamp
-         path: .
-         title: Update Data Sources
-         labels: automerge
-         commit-message: Update Data Sources
-         signoff: true
+        token: ${{ env.token }}
+        branch-suffix: timestamp
+        path: .
+        title: "Update Data Sources from LFX ${{ steps.date.outputs.time }}"
+        labels: automerge
+        commit-message: Update Data Sources from LFX
+        signoff: true
 
 
