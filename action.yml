@@ -1,5 +1,5 @@
-name: TAC Actions
-description: Action that syncs data from various sources into the TAC website
+name: Update TAC data from LFX
+description: Action that syncs data from LFX into the TAC website
 inputs:
   landscape_url:
     description: "URL for the project's landscape"
@@ -10,7 +10,7 @@ inputs:
   lfx_tac_commmittee_url:
     description: "URL to the committee in LFX"
     default: ""
-tac_agenda_gh_project_url:
+  tac_agenda_gh_project_url:
     description: "URL for the GitHub Project in the TAC repo for managing TAC meeting agendas"
     default: ""
 jobs:
