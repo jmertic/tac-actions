@@ -45,8 +45,8 @@ runs:
       ARTWORK_URL: ${{ inputs.artwork_url }}
       LFX_TAC_COMMITTEE_URL: ${{ inputs.lfx_tac_committee_url }}
       TAC_AGENDA_GH_PROJECT_URL: ${{ inputs.tac_agenda_gh_project_url }}
-      GH_TOKEN: ${{ env.PAT }}
-      GITHUB_TOKEN: ${{ env.PAT }}
+      GH_TOKEN: ${{ env.token }}
+      GITHUB_TOKEN: ${{ env.token }}
     run: |
       python ../lfx-tac-actions/updateprojects.py
       python ../lfx-tac-actions/updatetacmembers.py
