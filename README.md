@@ -18,7 +18,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: jmertic/lfx-tac-action
+      - uses: jmertic/lfx-tac-action@main
         with:
             landscape_url: # URL for the project's landscape; if blank, project data from the landscape won't be pulled
             artwork_url: # URL for the project's artwork repo; if blank, artwork from the artwork repo won't be pulled 
