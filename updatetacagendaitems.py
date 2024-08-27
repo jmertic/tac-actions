@@ -16,8 +16,9 @@ if "TAC_AGENDA_GH_PROJECT_URL" in os.environ and os.environ["TAC_AGENDA_GH_PROJE
     urlparts = urlparse(os.environ["TAC_AGENDA_GH_PROJECT_URL"]).path.split('/')
     if urlparts and urlparts[1] == 'orgs' and urlparts[3] == 'projects':
         csvFile = '_data/meeting-agenda-items.csv'
-        jsonProjectData = subprocess.run("gh project item-list {gh_project_id} --owner {gh_org} --format json".format(gh_project_id=urlparts[4],gh_org=urlparts[2]), shell=True, capture_output=True).stdout
-
+        command = subprocess.run("gh project item-list {gh_project_id} --owner {gh_org} --format json".format(gh_project_id=urlparts[4],gh_org=urlparts[2]), shell=True, capture_output=True)
+        jsonProjectData = command.stdout
+        
         csvRows = []
         try:
             projectData = json.loads(jsonProjectData)
