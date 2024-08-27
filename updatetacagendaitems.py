@@ -5,6 +5,7 @@
 #
 # encoding=utf8
 
+import sys
 import csv
 import json
 import os
@@ -22,7 +23,7 @@ if "TAC_AGENDA_GH_PROJECT_URL" in os.environ and os.environ["TAC_AGENDA_GH_PROJE
             projectData = json.loads(jsonProjectData)
         except:
             logger.error("Invalid response from gh client: '{}'".format(command.stderr))
-            return None
+            sys.exit(0)
         
         for item in projectData['items']:
             print("Processing {}...".format(item['content']['title']))
