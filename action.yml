@@ -61,7 +61,7 @@ runs:
     with:
       token: ${{ env.token }}
       branch-suffix: timestamp
-      path: .
+      path: ./tac-repo
       title: "Update Data Sources from LFX ${{ steps.date.outputs.time }}"
       labels: automerge
       commit-message: Update Data Sources from LFX
