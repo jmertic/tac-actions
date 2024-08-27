@@ -18,7 +18,12 @@ if "TAC_AGENDA_GH_PROJECT_URL" in os.environ and os.environ["TAC_AGENDA_GH_PROJE
         jsonProjectData = subprocess.run("gh project item-list {gh_project_id} --owner {gh_org} --format json".format(gh_project_id=urlparts[4],gh_org=urlparts[2]), shell=True, capture_output=True).stdout
 
         csvRows = []
-        projectData = json.loads(jsonProjectData)
+        try:
+            projectData = json.loads(jsonProjectData)
+        except:
+            logger.error("Invalid response from gh client: '{}'".format(command.stderr))
+            return None
+        
         for item in projectData['items']:
             print("Processing {}...".format(item['content']['title']))
             meetingItem = {
