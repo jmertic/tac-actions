@@ -16,7 +16,7 @@ if "TAC_AGENDA_GH_PROJECT_URL" in os.environ and os.environ["TAC_AGENDA_GH_PROJE
     urlparts = urlparse(os.environ["TAC_AGENDA_GH_PROJECT_URL"]).path.split('/')
     if urlparts and urlparts[1] == 'orgs' and urlparts[3] == 'projects':
         csvFile = '_data/meeting-agenda-items.csv'
-        command = subprocess.run("gh project item-list {gh_project_id} --owner {gh_org} --format json".format(gh_project_id=urlparts[4],gh_org=urlparts[2]), shell=True, capture_output=True)
+        command = subprocess.run("gh project item-list {gh_project_id} --owner {gh_org} --format json --limit 100".format(gh_project_id=urlparts[4],gh_org=urlparts[2]), shell=True, capture_output=True)
         jsonProjectData = command.stdout
         
         csvRows = []
@@ -33,7 +33,8 @@ if "TAC_AGENDA_GH_PROJECT_URL" in os.environ and os.environ["TAC_AGENDA_GH_PROJE
                 'url': item['content']['url'],
                 'number': item['content']['number'],
                 'scheduled_date': item['scheduled Date'] if 'scheduled Date' in item else None,
-                'status': item['status'] if 'status' in item else None
+                'status': item['status'] if 'status' in item else None,
+                'last_review_date': item['last Review Date'] if 'last Review Date' in item else None,
                 }
             if 'labels' in item:
                 if '1-new-project-wg' in item['labels']:
