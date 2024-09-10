@@ -17,7 +17,7 @@ runs:
   using: composite
   steps:
   - name: Harden Runner
-    uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
+    uses: step-security/harden-runner@5c7944e73c4c2a096b17a9cb74d65b6c2bbafbde # v2.9.1
     with:
       egress-policy: audit
   - name: Check out repo
@@ -34,7 +34,7 @@ runs:
       repository: jmertic/lfx-tac-actions
       path: lfx-tac-actions
   - name: Set up Python 3.x
-    uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
+    uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
     with:
       python-version: '3.x'
   - name: Run build
@@ -57,7 +57,7 @@ runs:
     with:
       format: "YYYY-MM-DD"
   - name: Create Pull Request
-    uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
+    uses: peter-evans/create-pull-request@8867c4aba1b742c39f8d0ba35429c2dfa4b6cb20 # v7.0.1
     with:
       token: ${{ env.token }}
       branch-suffix: timestamp
