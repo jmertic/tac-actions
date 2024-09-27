@@ -32,7 +32,7 @@ if "LANDSCAPE_URL" in os.environ and os.environ["LANDSCAPE_URL"] != '':
                             'Name': projectData['name'],
                             'Level': projectData['project'],
                             'Logo URL': project['logo'],
-            'Slug': projectData['id'],
+                            'Slug': projectData['id'],
                             'Categories': ','.join(categories),
                             'Website': projectData['homepage_url'],
                             'Chair': projectData['extra']['chair'] if 'extra' in projectData and 'chair' in projectData['extra'] else None,
