@@ -7,7 +7,7 @@ inputs:
   artwork_url:
     description: "URL for the project's artwork repo"
     default: ""
-  lfx_tac_commmittee_url:
+  lfx_tac_committee_url:
     description: "URL to the committee in LFX"
     default: ""
   tac_agenda_gh_project_url:
