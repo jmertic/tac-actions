@@ -4,6 +4,9 @@ inputs:
   landscape_url:
     description: "URL for the project's landscape"
     default: ""
+  landscape_version:
+    description: "One of 'v1' or 'v2', depending upon which version of the landscape is being used"
+    default: "v1"
   artwork_url:
     description: "URL for the project's artwork repo"
     default: ""
@@ -37,8 +40,25 @@ runs:
     uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
     with:
       python-version: '3.x'
-  - name: Run build
+  - name: Run build - Landscape v1
     working-directory: ./tac-repo
+    if: ${{ inputs.landscape_version == 'v1' }}
+    shell: bash
+    env:
+      LANDSCAPE_URL: ${{ inputs.landscape_url }}
+      ARTWORK_URL: ${{ inputs.artwork_url }}
+      LFX_TAC_COMMITTEE_URL: ${{ inputs.lfx_tac_committee_url }}
+      TAC_AGENDA_GH_PROJECT_URL: ${{ inputs.tac_agenda_gh_project_url }}
+      GH_TOKEN: ${{ env.token }}
+      GITHUB_TOKEN: ${{ env.token }}
+    run: |
+      python ../lfx-tac-actions/updateprojects-landscape1.py
+      python ../lfx-tac-actions/updateclomonitor-landscape1.py
+      python ../lfx-tac-actions/updatetacmembers.py
+      python ../lfx-tac-actions/updatetacagendaitems.py
+  - name: Run build - Landscape v2
+    working-directory: ./tac-repo
+    if: ${{ inputs.landscape_version == 'v2' }}
     shell: bash
     env:
       LANDSCAPE_URL: ${{ inputs.landscape_url }}
@@ -49,6 +69,7 @@ runs:
       GITHUB_TOKEN: ${{ env.token }}
     run: |
       python ../lfx-tac-actions/updateprojects.py
+      python ../lfx-tac-actions/updateclomonitor.py
       python ../lfx-tac-actions/updatetacmembers.py
       python ../lfx-tac-actions/updatetacagendaitems.py
   - name: Get current date
