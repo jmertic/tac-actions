@@ -58,7 +58,7 @@ def main(args=None):
         response.raise_for_status()
         projectlist = response.json()
     except Exception as e:
-        logging.critical(f"Error getting projects at {response.url} - {e}")
+        logging.critical(f"Error getting projects at {endpoint_url.format(safe_slug)} - {e}")
         return
 
     if len(projectlist['Data']) == 0:
@@ -66,6 +66,9 @@ def main(args=None):
 
     foundslugs = []
     for record in projectlist['Data']:
+        if not record.get('ProjectLogo'):
+            continue
+
         logging.info("Processing artwork for {}".format(record.get('Name')))
         _, extension = os.path.splitext(urlparse(record.get('ProjectLogo')).path)
         logo_path = (args.project_path / record.get('Slug').lower() / "primary" / "color" / f"{record.get('Slug').lower()}-primary-color").with_suffix(extension)
@@ -94,8 +97,8 @@ def main(args=None):
         except FileNotFoundError:
             post = frontmatter.Post(content="")
 
-        post['title'] = record.get('Name')
         post['featured_image'] = str(logo_path.relative_to(args.project_path / record.get('Slug').lower()))
+        post['title'] = record.get('Name')
 
         readme_path.parent.mkdir(parents=True, exist_ok=True)
         readme_path.write_text(frontmatter.dumps(post), encoding="utf-8")
