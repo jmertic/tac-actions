@@ -14,6 +14,7 @@ import re
 import frontmatter
 import cairosvg
 import argparse
+import yaml
 
 from . import setup_logging, setup_argparse
 
@@ -42,7 +43,7 @@ def main(args=None):
 
     setup_logging(args.log_level)
 
-    endpoint_url = 'https://api-gw.platform.linuxfoundation.org/project-service/v1/public/projects?$filter=parentSlug%20eq%20{}%20and%20status%20eq%20Active&pageSize=2000&orderBy=name'
+    endpoint_url = 'https://api-gw.platform.linuxfoundation.org/project-service/v1/public/projects?$filter=parentSlug%20eq%20{}%20and%20status%20eq%20Active&pageSize=2000&orderBy=name&hasLogo=true'
 
     # Validate the string to prevent SSRF / Injection. A standard slug should only contain alphanumeric characters and hyphens.
     if not re.match(r'^[a-zA-Z0-9-]+$', args.slug):
@@ -57,9 +58,13 @@ def main(args=None):
         response.raise_for_status()
         projectlist = response.json()
     except Exception as e:
-        logging.critical(f"Error getting projects at {response.url} - {e}")
+        logging.critical(f"Error getting projects at {endpoint_url.format(safe_slug)} - {e}")
         return
 
+    if len(projectlist['Data']) == 0:
+        logging.critical(f"No records found for `{safe_slug}`")
+
+    foundslugs = []
     for record in projectlist['Data']:
         if not record.get('ProjectLogo'):
             continue
@@ -79,7 +84,8 @@ def main(args=None):
                     logging.info("Writing file {}".format(str(logo_path.with_suffix(".png"))))
                     cairosvg.svg2png(
                         url=str(logo_path),
-                        write_to=str(logo_path.with_suffix(".png"))
+                        write_to=str(logo_path.with_suffix(".png")),
+                        unsafe=True
                     )
         except Exception as e:
             logging.exception(f"Error getting file {record.get('ProjectLogo')} - '{e}'")
@@ -91,11 +97,44 @@ def main(args=None):
         except FileNotFoundError:
             post = frontmatter.Post(content="")
 
-        post['title'] = record.get('Name')
         post['featured_image'] = str(logo_path.relative_to(args.project_path / record.get('Slug').lower()))
+        post['title'] = record.get('Name')
 
         readme_path.parent.mkdir(parents=True, exist_ok=True)
         readme_path.write_text(frontmatter.dumps(post), encoding="utf-8")
+        foundslugs.append(record.get('Slug').lower())
+
+    # Hide projects that don't come through the endpoint ( would likely be Archived ones )
+    # Iterate through all README.md files in subdirectories
+    for readme_path in Path(args.project_path).rglob("README.md"):
+        if readme_path.parent.name in foundslugs:
+            continue
+
+        try:
+            content = readme_path.read_text(encoding="utf-8")
+            post = frontmatter.loads(content)
+
+            # Preserve existing order and ensure target key is last
+            metadata = dict(post.metadata)
+            metadata.pop("level", None)
+            metadata["level"] = 'Archived'
+
+            # Format YAML manually with sort_keys=False
+            yaml_frontmatter = yaml.dump(
+                metadata, sort_keys=False, allow_unicode=True
+            ).strip()
+
+            # Recombine front matter and markdown body
+            body = post.content
+            new_content = f"---\n{yaml_frontmatter}\n---\n{body}"
+
+            readme_path.write_text(new_content, encoding="utf-8")
+
+            logging.info(f"Marked {readme_path} as Archived")
+
+        except Exception as e:
+            print(f"Error processing {readme_path}: {e}")
+
 
 if __name__ == '__main__':
     main()
