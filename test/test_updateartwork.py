@@ -146,7 +146,8 @@ class TestMainUpdateArtwork(unittest.TestCase):
         png_file = svg_file.with_suffix(".png")
         mock_cairo.assert_called_once_with(
             url=str(svg_file),
-            write_to=str(png_file)
+            write_to=str(png_file),
+            unsafe=True
         )
 
         # 3. Verify README.md frontmatter creation
