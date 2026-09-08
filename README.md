@@ -37,7 +37,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: jmertic/lfx-tac-actions@2682b048da24d3046b4c4b1959bbc3723666b635 # 20260826
+      - uses: jmertic/lfx-tac-actions@3cc53bcc460908d9a414290e83e8104357b0d652 # 20260908
         with:
           # refer to https://github.com/jmertic/lfx-tac-actions/blob/main/action.yml#L3 for the various inputs to set. 
         env:
