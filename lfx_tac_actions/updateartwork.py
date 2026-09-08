@@ -69,7 +69,7 @@ def main(args=None):
         if not record.get('ProjectLogo'):
             continue
 
-        logging.info("Processing artwork for {}".format(record.get('Name')))
+        logging.info("Processing artwork for {}".format(record.get('Name').strip()))
         _, extension = os.path.splitext(urlparse(record.get('ProjectLogo')).path)
         logo_path = (args.project_path / record.get('Slug').lower() / "primary" / "color" / f"{record.get('Slug').lower()}-primary-color").with_suffix(extension)
         try:
@@ -93,15 +93,28 @@ def main(args=None):
 
         readme_path = args.project_path / record.get('Slug').lower() / "README.md"
         try:
-            post = frontmatter.load(readme_path)
+            content = readme_path.read_text(encoding="utf-8")
+            post = frontmatter.loads(content)
         except FileNotFoundError:
             post = frontmatter.Post(content="")
 
-        post['featured_image'] = str(logo_path.relative_to(args.project_path / record.get('Slug').lower()))
-        post['title'] = record.get('Name')
+        metadata = dict(post.metadata)
+
+        metadata.pop('title', None)
+        metadata.pop('featured_image', None)
+        metadata.pop('project', None)
+        metadata.pop('level', None)
+
+        metadata['project'] = record.get('Name').strip()
+        metadata['featured_image'] = str(logo_path.relative_to(args.project_path / record.get('Slug').lower()))
+
+        yaml_frontmatter = yaml.dump(metadata, sort_keys=False, allow_unicode=True).strip()
+        body = post.content
+        new_content = f"---\n{yaml_frontmatter}\n---\n{body}" if yaml_frontmatter else body
 
         readme_path.parent.mkdir(parents=True, exist_ok=True)
-        readme_path.write_text(frontmatter.dumps(post), encoding="utf-8")
+        readme_path.write_text(new_content, encoding="utf-8")
+
         foundslugs.append(record.get('Slug').lower())
 
     # Hide projects that don't come through the endpoint ( would likely be Archived ones )
